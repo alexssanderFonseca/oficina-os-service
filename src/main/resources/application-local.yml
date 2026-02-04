@@ -1,0 +1,62 @@
+server:
+  port: 8088
+
+spring:
+  flyway:
+    enabled: true
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus,mappings
+  endpoint:
+    health:
+      show-details: always
+
+otel:
+  service:
+    name: oficina
+    resource:
+      attributes:
+        environment: local
+        version: 1.0.0
+        team: backend
+
+  traces:
+    exporter: otlp
+    endpoint: http://host.docker.internal:4318
+    sampler: always_on
+
+  metrics:
+    exporter: otlp
+    endpoint: http://host.docker.internal:4318
+
+jwt:
+  key: 1kGCW3CtZfT/pSBWIMDWY7//RJk0As4VfEybjgbuOW4=
+
+  logs:
+    exporter: none
+
+  instrumentation:
+    spring-webmvc:
+      enabled: true
+    jdbc:
+      enabled: true
+    logback-appender:
+      enabled: true
+    micrometer:
+      enabled: true

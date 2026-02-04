@@ -1,0 +1,57 @@
+server:
+  port: ${SERVER_PORT:8088}
+
+spring:
+  flyway:
+    enabled: true
+  datasource:
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+jwt:
+  key: ${JWT_KEY}
+
+otel:
+  service:
+    name: oficina
+    resource:
+      attributes:
+        environment: ${OTEL_ENVIRONMENT}
+        version: ${OTEL_VERSION}
+        team: backend
+
+  traces:
+    exporter: otlp
+    endpoint: ${OTEL_ENDPOINT}
+    sampler: always_on
+
+  metrics:
+    exporter: otlp
+    endpoint: ${OTEL_ENDPOINT}
+
+  logs:
+    exporter: none
+
+  instrumentation:
+    spring-webmvc:
+      enabled: true
+    jdbc:
+      enabled: true
+    logback-appender:
+      enabled: true
+    micrometer:
+      enabled: true
