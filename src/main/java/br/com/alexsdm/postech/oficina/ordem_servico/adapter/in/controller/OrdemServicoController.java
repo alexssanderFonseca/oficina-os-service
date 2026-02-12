@@ -33,6 +33,7 @@ public class OrdemServicoController {
     private final BuscarOrdemServicoPorIdUseCase buscarOrdemServicoPorIdUseCase;
     private final ListarOrdemServicoUsecase listarOrdemServicoUsecase;
     private final IniciarDiagnosticoOrdemServicoUsecase iniciarDiagnosticoOrdemServicoUsecase;
+    private final AprovarOrdemServicoUseCase aprovarOrdemServicoUseCase;
     private final OrdemServicoControllerMapper mapper;
 
 
@@ -47,24 +48,34 @@ public class OrdemServicoController {
         return ResponseEntity.created(URI.create("/ordens-servicos/" + id)).body(new IdResponse(id));
     }
 
-    @Operation(summary = "Finaliza o diagnóstico de uma OS, informando peças e serviços necessários")
+    @Operation(summary = "Aprova uma ordem de serviço")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ordem de serviço aprovada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
+    })
+    @PostMapping("/{id}/aprovacoes")
+    public ResponseEntity<?> aprovar(@PathVariable UUID id) {
+        aprovarOrdemServicoUseCase.executar(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Finaliza o diagnóstico de uma OS, informando itens necessários")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Diagnóstico finalizado e orçamento gerado"),
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     @PostMapping("/{id}/diagnosticos/finalizacoes")
     public ResponseEntity<?> finalizarDiagnostico(@PathVariable UUID id,
-                                                  @RequestBody FinalizarDiagnosticoRequest request) {
-        var pecasDto = request.idPecasNecessarias()
+                                                  @RequestBody @Valid FinalizarDiagnosticoRequest request) {
+
+        var itensInput = request.itens()
                 .stream()
-                .map(peca -> new FinalizarDiagnosticoInput.FinalizarDiagnosticoItemPecaInput(
-                        peca.idPeca(),
-                        peca.qtd()
-                ))
+                .map(item -> new FinalizarDiagnosticoInput.ItemOrdemServicoInput(item.id(), item.quantidade(), item.tipo()))
                 .toList();
-        var input = new FinalizarDiagnosticoInput(id, pecasDto, request.idServicosNecessarios());
-        var orcamentoId = finalizarDiagnosticoUseCase.executar(input);
-        return ResponseEntity.ok(orcamentoId);
+
+        var input = new FinalizarDiagnosticoInput(id, itensInput);
+        var orcamento = finalizarDiagnosticoUseCase.executar(input);
+        return ResponseEntity.ok(new IdResponse(orcamento.orcamentoId()));
     }
 
     @Operation(summary = "Inicia a execução de uma ordem de serviço após aprovação do orçamento")

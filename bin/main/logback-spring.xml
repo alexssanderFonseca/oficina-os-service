@@ -1,0 +1,31 @@
+<configuration>
+    <!-- Appender for JSON formatted logs -->
+    <appender name="JSON_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeContext>true</includeContext>
+            <customFields>{"service":"oficina","env":"${ENV_NAME:-local}"}</customFields>
+        </encoder>
+    </appender>
+
+    <!-- Appender for plain text logs -->
+    <appender name="PLAIN_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Default configuration for all profiles (non-local) -->
+    <springProfile name="!local">
+        <root level="INFO">
+            <appender-ref ref="JSON_STDOUT"/>
+        </root>
+    </springProfile>
+
+    <!-- Configuration specific to the 'local' profile -->
+    <springProfile name="local">
+        <root level="INFO">
+            <appender-ref ref="PLAIN_STDOUT"/>
+        </root>
+    </springProfile>
+
+</configuration>

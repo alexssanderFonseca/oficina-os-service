@@ -22,7 +22,7 @@ public class ListarOrdemServicoUsecaseImpl implements ListarOrdemServicoUsecase 
                 .map(ordemServico -> new ListarOrdemServicoUsecaseOutput(
                         ordemServico.getId(),
                         ordemServico.getCliente().getId(),
-                        ordemServico.getVeiculoId(),
+                        ordemServico.getVeiculo().getId(),
                         ordemServico.getStatus().name(),
                         ordemServico.getDataCriacao()
                 ))

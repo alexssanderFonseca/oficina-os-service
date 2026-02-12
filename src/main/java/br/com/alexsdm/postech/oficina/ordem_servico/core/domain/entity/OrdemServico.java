@@ -2,6 +2,7 @@ package br.com.alexsdm.postech.oficina.ordem_servico.core.domain.entity;
 
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,13 +10,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
-
 public class OrdemServico {
     private UUID id;
     private Cliente cliente;
-    private UUID veiculoId;
-    private List<ItemPecaOrdemServico> itensPecaOrdemServico = new ArrayList<>();
-    private List<ItemServicoOrdemServico> servicos = new ArrayList<>();
+    private Veiculo veiculo;
+    private final List<ItemOrdemServico> itens = new ArrayList<>();
     private Status status;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataInicioDiagnostico;
@@ -23,12 +22,12 @@ public class OrdemServico {
     private LocalDateTime dataInicioDaExecucao;
     private LocalDateTime dataEntrega;
     private LocalDateTime dataFinalizacao;
+    private BigDecimal valorTotal;
 
     private OrdemServico(UUID id,
                          Cliente cliente,
-                         UUID veiculoId,
-                         List<ItemPecaOrdemServico> itensPecaOrdemServico,
-                         List<ItemServicoOrdemServico> servicos,
+                         Veiculo veiculo,
+                         List<ItemOrdemServico> itens,
                          Status status,
                          LocalDateTime dataCriacao,
                          LocalDateTime dataInicioDiagnostico,
@@ -38,12 +37,9 @@ public class OrdemServico {
                          LocalDateTime dataFinalizacao) {
         this.id = id;
         this.cliente = cliente;
-        this.veiculoId = veiculoId;
-        if (itensPecaOrdemServico != null) {
-            this.itensPecaOrdemServico.addAll(itensPecaOrdemServico);
-        }
-        if (servicos != null) {
-            this.servicos.addAll(servicos);
+        this.veiculo = veiculo;
+        if (itens != null) {
+            this.itens.addAll(itens);
         }
         this.status = status;
         this.dataCriacao = dataCriacao;
@@ -52,16 +48,16 @@ public class OrdemServico {
         this.dataFimDiagnostico = dataFimDiagnostico;
         this.dataEntrega = dataEntrega;
         this.dataFinalizacao = dataFinalizacao;
+        this.valorTotal = calcularValorTotal();
     }
 
 
     public static OrdemServico criarOrdemServicoParaDiagnostico(Cliente cliente,
-                                                                UUID veiculoId) {
+                                                                Veiculo veiculo) {
         return new OrdemServico(
                 UUID.randomUUID(),
                 cliente,
-                veiculoId,
-                Collections.emptyList(),
+                veiculo,
                 Collections.emptyList(),
                 Status.EM_DIAGNOSTICO,
                 LocalDateTime.now(),
@@ -74,16 +70,14 @@ public class OrdemServico {
     }
 
     public static OrdemServico criarOrdemServicoParaExecucao(Cliente cliente,
-                                                             UUID veiculoId,
-                                                             List<ItemPecaOrdemServico> itensPecaOrdemServico,
-                                                             List<ItemServicoOrdemServico> servicos
+                                                             Veiculo veiculo,
+                                                             List<ItemOrdemServico> itens
     ) {
         return new OrdemServico(
                 UUID.randomUUID(),
                 cliente,
-                veiculoId,
-                itensPecaOrdemServico,
-                servicos,
+                veiculo,
+                itens,
                 Status.EM_EXECUCAO,
                 LocalDateTime.now(),
                 null,
@@ -96,9 +90,8 @@ public class OrdemServico {
 
     public static OrdemServico from(UUID id,
                                     Cliente cliente,
-                                    UUID veiculoId,
-                                    List<ItemPecaOrdemServico> itensPecaOrdemServico,
-                                    List<ItemServicoOrdemServico> servicos,
+                                    Veiculo veiculo,
+                                    List<ItemOrdemServico> itens,
                                     Status status,
                                     LocalDateTime dataCriacao,
                                     LocalDateTime dataInicioDaExecucao,
@@ -109,9 +102,8 @@ public class OrdemServico {
         return new OrdemServico(
                 id,
                 cliente,
-                veiculoId,
-                itensPecaOrdemServico,
-                servicos,
+                veiculo,
+                itens,
                 status,
                 dataCriacao,
                 dataInicioDiagnostico,
@@ -123,20 +115,19 @@ public class OrdemServico {
     }
 
 
-    public void adicionarPecasInsumos(List<ItemPecaOrdemServico> itens) {
-        this.itensPecaOrdemServico.addAll(itens);
+    private void adicionarItens(List<ItemOrdemServico> itens) {
+        this.itens.addAll(itens);
     }
 
-    public void adicionarServicos(List<ItemServicoOrdemServico> itens) {
-        this.servicos.addAll(itens);
-    }
 
-    public void executar(List<ItemPecaOrdemServico> itens,
-                         List<ItemServicoOrdemServico> servicos) {
+    public void executar() {
         this.status = Status.EM_EXECUCAO;
-        this.adicionarServicos(servicos);
-        this.adicionarPecasInsumos(itens);
         this.dataInicioDaExecucao = LocalDateTime.now();
+    }
+
+    public void executar(List<ItemOrdemServico> itens) {
+        this.adicionarItens(itens);
+        this.executar();
     }
 
     public void iniciarDiagnostico() {
@@ -145,8 +136,9 @@ public class OrdemServico {
     }
 
 
-    public void finalizarDiagnostico() {
+    public void finalizarDiagnostico(List<ItemOrdemServico> itens) {
         this.status = Status.AGUARDANDO_APROVACAO;
+        this.adicionarItens(itens);
         this.dataFimDiagnostico = LocalDateTime.now();
     }
 
@@ -158,5 +150,20 @@ public class OrdemServico {
     public void entregar() {
         this.status = Status.ENTREGUE;
         this.dataEntrega = LocalDateTime.now();
+    }
+
+    public void aprovar() {
+        this.status = Status.AGUARDANDO_EXECUCAO;
+    }
+
+
+    private BigDecimal calcularValorTotal() {
+        if (this.itens.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        return this.itens.stream()
+                .map(ItemOrdemServico::getValorTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

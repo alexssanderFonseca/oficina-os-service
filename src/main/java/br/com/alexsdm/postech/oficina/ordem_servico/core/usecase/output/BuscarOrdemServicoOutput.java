@@ -13,7 +13,6 @@ public record BuscarOrdemServicoOutput(
         String status,
         BuscarOrdemServicoDadosClientOutput dadosCliente,
         BuscarOrdemServicoDadosVeiculoOutput dadosVeiculo,
-        List<BuscarOrdemServicoPecasInsumosOutput> pecasInsumos,
-        List<BuscarOrdemServicoDadosServicoOutput> servicos
+        List<BuscarOrdemServicoItemOutput> itens
 ) {
 }

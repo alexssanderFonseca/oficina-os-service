@@ -4,12 +4,16 @@ import java.util.List;
 import java.util.UUID;
 
 public record FinalizarDiagnosticoInput(UUID osId,
-                                        List<FinalizarDiagnosticoItemPecaInput> pecas,
-                                        List<UUID> servicosIds) {
+                                        List<ItemOrdemServicoInput> itens) {
 
-    public record FinalizarDiagnosticoItemPecaInput(UUID pecaId,
-                                                    Integer quantidade) {
+
+    public record ItemOrdemServicoInput(
+            UUID id,
+            Integer quantidade,
+            String tipo
+    ) {
     }
+
 }
 
 

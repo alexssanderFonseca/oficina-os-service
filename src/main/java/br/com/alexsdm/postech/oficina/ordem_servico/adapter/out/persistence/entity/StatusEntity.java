@@ -3,7 +3,7 @@ package br.com.alexsdm.postech.oficina.ordem_servico.adapter.out.persistence.ent
 public enum StatusEntity {
     EM_DIAGNOSTICO,
     AGUARDANDO_APROVACAO,
-    APROVADA,
+    AGUARDANDO_EXECUCAO,
     EM_EXECUCAO,
     FINALIZADA,
     ENTREGUE

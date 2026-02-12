@@ -7,10 +7,15 @@ import java.util.UUID;
 
 public record CriarOrdemDeServicoRequest(@NotNull UUID veiculoId,
                                          @NotNull UUID clienteId,
-                                         List<ItemPecaInsumoRequest> pecasInsumos,
-                                         List<UUID> servicos) {
+                                         List<ItemRequest> itens) {
 
-    public record ItemPecaInsumoRequest(UUID idPecaInsumo, int qtd) {
+    public CriarOrdemDeServicoRequest(UUID veiculoId, UUID clienteId, List<ItemRequest> itens) {
+        this.veiculoId = veiculoId;
+        this.clienteId = clienteId;
+        this.itens = itens != null ? itens : List.of();
+    }
+
+    public record ItemRequest(UUID id, int quantidade, String tipo) {
     }
 
 }

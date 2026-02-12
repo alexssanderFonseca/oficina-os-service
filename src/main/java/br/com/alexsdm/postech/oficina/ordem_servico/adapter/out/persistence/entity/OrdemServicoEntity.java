@@ -22,12 +22,14 @@ public class OrdemServicoEntity {
     private String clienteNomeCompleto;
     private String clienteCpfCnpj;
     private UUID veiculoId;
+    private String veiculoPlaca;
+    private String veiculoMarca;
+    private String veiculoModelo;
+    private String veiculoAno;
+    private String veiculoCor;
 
     @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ItemPecaOrdemServicoEntity> itensPecaOrdemServico;
-
-    @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ItemServicoOrdemServicoEntity> itensServico;
+    private List<ItemOrdemServicoEntity> itens;
 
     @Enumerated(EnumType.STRING)
     private StatusEntity status;

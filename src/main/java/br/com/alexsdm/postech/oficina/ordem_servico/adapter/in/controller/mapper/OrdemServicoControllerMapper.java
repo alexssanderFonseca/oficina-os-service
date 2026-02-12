@@ -3,8 +3,10 @@ package br.com.alexsdm.postech.oficina.ordem_servico.adapter.in.controller.mappe
 import br.com.alexsdm.postech.oficina.ordem_servico.adapter.in.controller.request.CriarOrdemDeServicoRequest;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.input.CriarOrdemServicoInput;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface OrdemServicoControllerMapper {
+    @Mapping(source = "itens", target = "itens")
     CriarOrdemServicoInput toInput(CriarOrdemDeServicoRequest request);
 }

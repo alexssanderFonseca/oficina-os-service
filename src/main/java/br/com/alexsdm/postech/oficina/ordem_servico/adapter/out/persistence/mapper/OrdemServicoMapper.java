@@ -3,7 +3,10 @@ package br.com.alexsdm.postech.oficina.ordem_servico.adapter.out.persistence.map
 import br.com.alexsdm.postech.oficina.ordem_servico.adapter.out.persistence.entity.OrdemServicoEntity;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.entity.Cliente;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.entity.OrdemServico;
+import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.entity.Veiculo;
 import org.springframework.stereotype.Component;
+
+import java.util.stream.Collectors;
 
 @Component
 public class OrdemServicoMapper {
@@ -13,13 +16,10 @@ public class OrdemServicoMapper {
         return OrdemServico.from(
                 entity.getId(),
                 new Cliente(entity.getClienteId(), entity.getClienteNomeCompleto(), entity.getClienteCpfCnpj(), null),
-                entity.getVeiculoId(),
-                entity.getItensPecaOrdemServico().stream()
-                        .map(ItemPecaOrdemServicoMapper::toDomain)
-                        .toList(),
-                entity.getItensServico().stream()
-                        .map(ServicoOSMapper::toDomain)
-                        .toList(),
+                new Veiculo(entity.getVeiculoId(), entity.getVeiculoPlaca(), entity.getVeiculoMarca(), entity.getVeiculoModelo(), entity.getVeiculoAno(), entity.getVeiculoCor()),
+                entity.getItens().stream()
+                        .map(ItemOrdemServicoMapper::toDomain)
+                        .collect(Collectors.toList()),
                 StatusMapper.toDomain(entity.getStatus()),
                 entity.getDataCriacao(),
                 entity.getDataInicioDaExecucao(),
@@ -36,7 +36,12 @@ public class OrdemServicoMapper {
         entity.setClienteId(domain.getCliente().getId());
         entity.setClienteNomeCompleto(domain.getCliente().getNomeCompleto());
         entity.setClienteCpfCnpj(domain.getCliente().getCpfCnpj());
-        entity.setVeiculoId(domain.getVeiculoId());
+        entity.setVeiculoId(domain.getVeiculo().getId());
+        entity.setVeiculoPlaca(domain.getVeiculo().getPlaca());
+        entity.setVeiculoMarca(domain.getVeiculo().getMarca());
+        entity.setVeiculoModelo(domain.getVeiculo().getModelo());
+        entity.setVeiculoAno(domain.getVeiculo().getAno());
+        entity.setVeiculoCor(domain.getVeiculo().getCor());
         entity.setStatus(StatusMapper.toEntity(domain.getStatus()));
         entity.setDataCriacao(domain.getDataCriacao());
         entity.setDataInicioDiagnostico(domain.getDataInicioDiagnostico());
@@ -44,20 +49,12 @@ public class OrdemServicoMapper {
         entity.setDataInicioDaExecucao(domain.getDataInicioDaExecucao());
         entity.setDataEntrega(domain.getDataEntrega());
         entity.setDataFinalizacao(domain.getDataFinalizacao());
-        entity.setItensPecaOrdemServico(
-                domain.getItensPecaOrdemServico().stream()
-                        .map(ItemPecaOrdemServicoMapper::toEntity)
-                        .toList());
-        entity.setItensServico(
-                domain.getServicos().stream()
-                        .map(ServicoOSMapper::toEntity)
-                        .toList());
+        entity.setItens(
+                domain.getItens().stream()
+                        .map(ItemOrdemServicoMapper::toEntity)
+                        .collect(Collectors.toList()));
 
-        entity.getItensServico().
-                forEach(itemServicoOrdemServico -> itemServicoOrdemServico.setOrdemServico(entity));
-
-        entity.getItensPecaOrdemServico().
-                forEach(itemPecaOrdemServico -> itemPecaOrdemServico.setOrdemServico(entity));
+        entity.getItens().forEach(item -> item.setOrdemServico(entity));
 
         return entity;
     }

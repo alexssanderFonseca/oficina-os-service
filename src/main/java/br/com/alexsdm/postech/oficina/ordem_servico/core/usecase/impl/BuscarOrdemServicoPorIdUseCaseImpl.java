@@ -1,12 +1,14 @@
 package br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.impl;
 
-import br.com.alexsdm.postech.oficina.ordem_servico.core.port.out.OrdemServicoClientePort;
-import br.com.alexsdm.postech.oficina.ordem_servico.core.port.out.OrdemServicoRepository;
-import br.com.alexsdm.postech.oficina.ordem_servico.core.port.in.BuscarOrdemServicoPorIdUseCase;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.exception.OrdemServicoClienteNaoEncontradoException;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.exception.OrdemServicoNaoEncontradaException;
-import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.exception.OrdemServicoVeiculoNaoEncontradoException;
-import br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.output.*;
+import br.com.alexsdm.postech.oficina.ordem_servico.core.port.in.BuscarOrdemServicoPorIdUseCase;
+import br.com.alexsdm.postech.oficina.ordem_servico.core.port.out.OrdemServicoClientePort;
+import br.com.alexsdm.postech.oficina.ordem_servico.core.port.out.OrdemServicoRepository;
+import br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.output.BuscarOrdemServicoDadosClientOutput;
+import br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.output.BuscarOrdemServicoDadosVeiculoOutput;
+import br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.output.BuscarOrdemServicoItemOutput;
+import br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.output.BuscarOrdemServicoOutput;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,31 +29,19 @@ public class BuscarOrdemServicoPorIdUseCaseImpl implements BuscarOrdemServicoPor
         var cliente = ordemServicoClientePort.buscarCliente(ordemServico.getCliente().getId()).
                 orElseThrow(OrdemServicoClienteNaoEncontradoException::new);
 
-        var veiculo = cliente.getVeiculos().stream().
-                filter(veiculoCliente -> veiculoCliente.
-                        getId().
-                        equals(ordemServico.getVeiculoId().toString()))
-                .findFirst()
-                .orElseThrow(OrdemServicoVeiculoNaoEncontradoException::new);
-
+        var veiculo = ordemServico.getVeiculo();
         var dadosVeiculo = new BuscarOrdemServicoDadosVeiculoOutput(veiculo.getPlaca(),
                 veiculo.getMarca(),
                 veiculo.getAno(),
                 veiculo.getCor());
 
-        var pecasInsumos = ordemServico.getItensPecaOrdemServico()
-                .stream()
-                .map(pecaInsumo ->
-                        new BuscarOrdemServicoPecasInsumosOutput(pecaInsumo.getNome(),
-                                pecaInsumo.getDescricao(),
-                                pecaInsumo.getQuantidade()))
-                .toList();
-
-        var servicos = ordemServico.getServicos()
-                .stream()
-                .map(itemServico -> new BuscarOrdemServicoDadosServicoOutput(
-                        itemServico.getNome(),
-                        itemServico.getDescricao()
+        var itens = ordemServico.getItens().stream()
+                .map(item -> new BuscarOrdemServicoItemOutput(
+                        item.getNome(),
+                        item.getDescricao(),
+                        item.getPreco(),
+                        item.getQuantidade(),
+                        item.getTipo().name()
                 ))
                 .toList();
 
@@ -66,9 +56,7 @@ public class BuscarOrdemServicoPorIdUseCaseImpl implements BuscarOrdemServicoPor
                 ordemServico.getStatus().toString(),
                 dadosCliente,
                 dadosVeiculo,
-                pecasInsumos,
-                servicos
-
+                itens
         );
     }
 }

@@ -6,13 +6,22 @@ import java.util.UUID;
 public record CriarOrdemServicoInput(
         UUID clienteId,
         UUID veiculoId,
-        List<CriarOrdemServicoItemInsumoInput> pecasInsumos,
-        List<UUID> servicos
+        List<ItemInput> itens
 ) {
 
-
-    public record CriarOrdemServicoItemInsumoInput(UUID idPecaInsumo, int qtd) {
-
+    public CriarOrdemServicoInput(UUID clienteId, UUID veiculoId, List<ItemInput> itens) {
+        this.clienteId = clienteId;
+        this.veiculoId = veiculoId;
+        this.itens = itens != null ? itens : List.of();
     }
+
+
+    public record ItemInput(
+            UUID id,
+            Integer quantidade,
+            String tipo
+    ) {
+    }
+
 
 }
