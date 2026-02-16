@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ordem-servico-app
+  labels:
+    app: ordem-servico-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ordem-servico-app
+  template:
+    metadata:
+      labels:
+        app: ordem-servico-app
+    spec:
+      containers:
+        - name: ordem-servico-app
+          image: your-docker-repo/ordem-servico:latest # TODO: Replace with your actual Docker image
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://ordem-servico-db:5432/ordem_servico_db
+            - name: SPRING_DATASOURCE_USERNAME
+              value: user
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ordem-servico-secret # TODO: Create this secret
+                  key: POSTGRES_PASSWORD
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+      # Assuming a PostgreSQL deployment in the same namespace,
+      # or configured via an external service
+      # For simplicity, we are not creating a separate DB deployment manifest here,
+      # assuming it's managed separately or using an external managed DB.
+      # If you want a DB within k8s, you'd need a separate Deployment/Service for it.
