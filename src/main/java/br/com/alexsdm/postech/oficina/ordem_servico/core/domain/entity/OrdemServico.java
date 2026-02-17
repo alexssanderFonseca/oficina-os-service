@@ -23,6 +23,7 @@ public class OrdemServico {
     private LocalDateTime dataEntrega;
     private LocalDateTime dataFinalizacao;
     private BigDecimal valorTotal;
+    private UUID orcamentoId;
 
     private OrdemServico(UUID id,
                          Cliente cliente,
@@ -117,6 +118,7 @@ public class OrdemServico {
 
     private void adicionarItens(List<ItemOrdemServico> itens) {
         this.itens.addAll(itens);
+        this.calcularValorTotal();
     }
 
 
@@ -138,7 +140,8 @@ public class OrdemServico {
 
     public void finalizarDiagnostico(List<ItemOrdemServico> itens) {
         this.status = Status.AGUARDANDO_APROVACAO;
-        this.adicionarItens(itens);
+        this.itens.clear();
+        this.itens.addAll(itens);
         this.dataFimDiagnostico = LocalDateTime.now();
     }
 
@@ -154,6 +157,10 @@ public class OrdemServico {
 
     public void aprovar() {
         this.status = Status.AGUARDANDO_EXECUCAO;
+    }
+
+    public void vincularOrcamento(UUID orcamentoId) {
+        this.orcamentoId = orcamentoId;
     }
 
 

@@ -27,6 +27,8 @@ public class OrdemServicoEntity {
     private String veiculoModelo;
     private String veiculoAno;
     private String veiculoCor;
+    @Column(name = "orcamento_id")
+    private UUID orcamentoId;
 
     @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemOrdemServicoEntity> itens;

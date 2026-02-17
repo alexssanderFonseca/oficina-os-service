@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  POSTGRES_DB: "ordem_servico_db"
+  POSTGRES_USER: "userOrdemServicoDb"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ordem-servico-app-config
+data:
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://academico-rds.cpu6wek2azm8.us-east-1.rds.amazonaws.com:5432/ordem_servico_db"
+  SPRING_DATASOURCE_USERNAME: "userOrdemServicoDb"
+  ENV_NAME: "local"
+  FEIGN_CLIENT_CLIENTE_URL: "http://cliente-app-service"
+  FEIGN_CLIENT_CATALOGO_URL: "http://catalogo-app-service"
+  FEIGN_CLIENT_ORCAMENTO_URL: "http://orcamento-app-service"

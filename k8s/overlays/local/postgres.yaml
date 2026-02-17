@@ -1,0 +1,71 @@
+# 1. Secret for the database password
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ordem-servico-postgres-secret
+stringData:
+  SPRING_DATASOURCE_PASSWORD: "localdevpassword" # A simple password for local dev
+---
+# 2. Persistent Volume for data storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ordem-servico-postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# 3. Deployment for the PostgreSQL database
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ordem-servico-postgres-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ordem-servico-postgres-db
+  template:
+    metadata:
+      labels:
+        app: ordem-servico-postgres-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "ordem_servico_db" # The app will connect to this DB name
+            - name: POSTGRES_USER
+              value: "userOrdemServicoDb"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ordem-servico-postgres-secret
+                  key: SPRING_DATASOURCE_PASSWORD
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-data
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: ordem-servico-postgres-pvc
+---
+# 4. Service to expose the database within the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: ordem-servico-postgres-svc
+spec:
+  selector:
+    app: ordem-servico-postgres-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

@@ -42,7 +42,7 @@ dependencies {
 
     implementation("org.slf4j:slf4j-api:2.0.7")
     implementation("jakarta.inject:jakarta.inject-api:2.0.1")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
     implementation("com.h2database:h2")
     implementation("org.mapstruct:mapstruct:1.6.3")
     implementation("org.postgresql:postgresql:42.7.3")
@@ -84,6 +84,11 @@ tasks.withType<Test> {
     finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
     jvmArgs("-Dotel.traces.exporter=none", "-Dotel.metrics.exporter=none") // Disable OTLP exporters for tests
 }
+
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-parameters")
+}
+
 
 tasks.jacocoTestReport {
     dependsOn(tasks.test)

@@ -113,7 +113,7 @@ public class OrdemServicoStepDefinitions {
 
         // Mock para criação de orçamento - retorna apenas o UUID
         when(orcamentoFeignClient.criar(any(CriarOrcamentoRequest.class)))
-                .thenReturn(orcamentoId);
+                .thenReturn(new CriarOrcamentoResponse(orcamentoId));
 
         // Mock para buscar orçamento por ID
         OrcamentoResponse mockOrcamento = new OrcamentoResponse(

@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ordem-servico-app
+  namespace: oficina-ns
+  labels:
+    app: ordem-servico-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ordem-servico-app
+  template:
+    metadata:
+      annotations:
+        ad.datadoghq.com/ordem-servico-app.logs: '[{"source": "java", "service": "ordem-servico"}]'
+      labels:
+        app: ordem-servico-app
+        admission.datadoghq.com/enabled: "true"
+    spec:
+      containers:
+        - name: ordem-servico-app
+          image: alexmarquesfa/ordemservicooficina:latest
+          imagePullPolicy: Always
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              export OTEL_EXPORTER_OTLP_ENDPOINT="http://${DD_AGENT_HOST}:4318"
+              exec java -jar app.jar
+          ports:
+            - containerPort: 9091
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://ordem-servico-postgres-svc:5432/ordem_servico_db"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: ordem-servico-app-config
+                  key: SPRING_DATASOURCE_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ordem-servico-postgres-secret
+                  key: SPRING_DATASOURCE_PASSWORD
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ordem-servico-secret
+                  key: JWT_KEY
+            - name: SERVER_PORT
+              value: "9091"
+            - name: ENV_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: ENV_NAME
+                  name: ordem-servico-app-config
+            - name: FEIGN_CLIENT_CLIENTE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ordem-servico-app-config
+                  key: FEIGN_CLIENT_CLIENTE_URL
+            - name: FEIGN_CLIENT_CATALOGO_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ordem-servico-app-config
+                  key: FEIGN_CLIENT_CATALOGO_URL
+            - name: FEIGN_CLIENT_ORCAMENTO_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ordem-servico-app-config
+                  key: FEIGN_CLIENT_ORCAMENTO_URL
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "700Mi"
+              cpu: "800m"
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9091
+            initialDelaySeconds: 45
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9091
+            initialDelaySeconds: 45
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ordem-servico-app-loadbalancer
+  namespace: oficina-ns
+  labels:
+    app: ordem-servico-app
+spec:
+  type: LoadBalancer
+  selector:
+    app: ordem-servico-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 9091

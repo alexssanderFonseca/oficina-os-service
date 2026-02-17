@@ -1,12 +1,17 @@
 package br.com.alexsdm.postech.oficina.ordem_servico.adapter.out.client.feign.dto;
 
-import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.entity.TipoItem;
+import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public record ItemOrcamentoRequest(
-    UUID itemId,
-    Integer quantidade,
-    TipoItem tipo
+    @NotNull UUID itemId,
+    @NotNull Integer quantidade,
+    @NotNull String tipo,
+    @NotNull String nome,
+    String descricao,
+    @NotNull BigDecimal precoVenda
 ) {
 }
+

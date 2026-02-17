@@ -2,6 +2,7 @@ package br.com.alexsdm.postech.oficina.ordem_servico.adapter.out.client.feign;
 
 import br.com.alexsdm.postech.oficina.ordem_servico.adapter.out.client.feign.dto.CriarOrcamentoRequest;
 import br.com.alexsdm.postech.oficina.ordem_servico.adapter.out.client.feign.dto.OrcamentoResponse;
+import br.com.alexsdm.postech.oficina.ordem_servico.adapter.out.client.feign.dto.CriarOrcamentoResponse; // New Import
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,5 +18,5 @@ public interface OrcamentoFeignClient {
     OrcamentoResponse buscarPorId(@PathVariable("id") UUID id);
 
     @PostMapping("/orcamentos")
-    UUID criar(@RequestBody CriarOrcamentoRequest request);
+    CriarOrcamentoResponse criar(@RequestBody CriarOrcamentoRequest request); // Changed return type
 }

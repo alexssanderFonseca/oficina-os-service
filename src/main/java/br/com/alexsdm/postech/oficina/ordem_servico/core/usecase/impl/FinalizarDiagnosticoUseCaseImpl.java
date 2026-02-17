@@ -12,6 +12,8 @@ import br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.dto.ItemCatalog
 import br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.input.FinalizarDiagnosticoInput;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.output.FinalizarDiagnosticoOutput;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,6 +24,8 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class FinalizarDiagnosticoUseCaseImpl implements FinalizarDiagnosticoUseCase {
 
+    private static final Logger logger = LoggerFactory.getLogger(FinalizarDiagnosticoUseCaseImpl.class);
+
     private final OrdemServicoCatalogoPort catalogoPort;
     private final OrdemServicoRepository ordemServicoRepository;
     private final OrdemServicoOrcamentoPort ordemServicoOrcamentoPort;
@@ -29,32 +33,50 @@ public class FinalizarDiagnosticoUseCaseImpl implements FinalizarDiagnosticoUseC
 
     @Override
     public FinalizarDiagnosticoOutput executar(FinalizarDiagnosticoInput input) {
+        logger.info("Iniciando finalização de diagnóstico para Ordem de Serviço ID: {}", input.osId());
+        try {
+            var ordemServico = ordemServicoRepository.buscarPorId(input.osId())
+                    .orElseGet(() -> {
+                        logger.warn("Ordem de Serviço com ID {} não encontrada para finalização de diagnóstico.", input.osId());
+                        throw new OrdemServicoNaoEncontradaException();
+                    });
+            logger.info("Ordem de Serviço com ID {} encontrada para finalização de diagnóstico.", input.osId());
 
-        var ordemServico = ordemServicoRepository.buscarPorId(input.osId())
-                .orElseThrow(OrdemServicoNaoEncontradaException::new);
-
-        var itens = obterItens(input);
-        ordemServico.finalizarDiagnostico(itens);
-        ordemServicoRepository.salvar(ordemServico);
-        enviarOrcamento(ordemServico);
-        return new FinalizarDiagnosticoOutput(UUID.randomUUID());
+            var itens = obterItens(input);
+            ordemServico.finalizarDiagnostico(itens);
+            ordemServicoRepository.salvar(ordemServico);
+            logger.info("Diagnóstico finalizado e Ordem de Serviço ID {} atualizada. Enviando orçamento.", ordemServico.getId());
+            UUID orcamentoIdRetornado = enviarOrcamento(ordemServico);
+            ordemServico.vincularOrcamento(orcamentoIdRetornado);
+            ordemServicoRepository.salvar(ordemServico);
+            logger.info("Finalização de diagnóstico para Ordem de Serviço ID {} concluída. Orçamento ID: {}", ordemServico.getId(), orcamentoIdRetornado);
+            return new FinalizarDiagnosticoOutput(orcamentoIdRetornado);
+        } catch (Exception e) {
+            logger.error("Erro ao finalizar diagnóstico para Ordem de Serviço ID {}: {}", input.osId(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     private List<ItemOrdemServico> obterItens(FinalizarDiagnosticoInput input) {
-
-        return input.itens()
-                .stream()
-                .map(itemOrdemServicoInput ->
-                        CompletableFuture.supplyAsync(() -> {
-                                    var itemCatalogo = catalogoPort.buscarItemCatalogo(itemOrdemServicoInput.id(),
-                                            itemOrdemServicoInput.tipo());
-                                    return montarItemOrdemServico(itemCatalogo, itemOrdemServicoInput);
-                                }
-                        ))
-                .map(CompletableFuture::join)
-                .toList();
-
-
+        logger.info("Obtendo itens para finalização de diagnóstico.");
+        try {
+            var itens = input.itens()
+                    .stream()
+                    .map(itemOrdemServicoInput ->
+                            CompletableFuture.supplyAsync(() -> {
+                                        var itemCatalogo = catalogoPort.buscarItemCatalogo(itemOrdemServicoInput.id(),
+                                                itemOrdemServicoInput.tipo());
+                                        return montarItemOrdemServico(itemCatalogo, itemOrdemServicoInput);
+                                    }
+                            ))
+                    .map(CompletableFuture::join)
+                    .toList();
+            logger.info("{} itens obtidos para finalização de diagnóstico.", itens.size());
+            return itens;
+        } catch (Exception e) {
+            logger.error("Erro ao obter itens para finalização de diagnóstico: {}", e.getMessage(), e);
+            throw new RuntimeException("Erro ao obter itens para finalização de diagnóstico.", e);
+        }
     }
 
     private ItemOrdemServico montarItemOrdemServico(ItemCatalogoDto itemCatalogoDto,
@@ -71,8 +93,9 @@ public class FinalizarDiagnosticoUseCaseImpl implements FinalizarDiagnosticoUseC
     }
 
 
-    private void enviarOrcamento(OrdemServico ordemServico) {
-        ordemServicoOrcamentoPort.criar(ordemServico);
+    private UUID enviarOrcamento(OrdemServico ordemServico) {
+        logger.info("Invocando serviço de orçamento para criar orçamento para OS ID: {}", ordemServico.getId());
+        return ordemServicoOrcamentoPort.criar(ordemServico);
     }
 
 

@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: oficina-ns
+
+resources:
+  - ../../base/app-configmap.yaml
+  - ../../base/ordem-servico-secret.yaml
+  - ../../base/app-deployment.yaml
+  - ../../base/app-service.yaml
+  - ../../base/app-hpa.yaml
+
+  # Add the local-specific resources
+  - namespace.yaml
+  - postgres.yaml
+  - app-secret.yaml
+
+patches:
+  - path: configmap-patch.yaml

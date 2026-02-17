@@ -1,5 +1,6 @@
 package br.com.alexsdm.postech.oficina.ordem_servico.adapter.in.controller;
 
+import br.com.alexsdm.postech.oficina.ordem_servico.adapter.in.controller.IdResponse;
 import br.com.alexsdm.postech.oficina.ordem_servico.adapter.in.controller.mapper.OrdemServicoControllerMapper;
 import br.com.alexsdm.postech.oficina.ordem_servico.adapter.in.controller.request.CriarOrdemDeServicoRequest;
 import br.com.alexsdm.postech.oficina.ordem_servico.adapter.in.controller.request.ExecutarOrdemServicoRequest;
@@ -12,6 +13,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +27,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = "Ordens de Serviço", description = "Gerenciamento das ordens de serviço")
 public class OrdemServicoController {
+
+    private static final Logger logger = LoggerFactory.getLogger(OrdemServicoController.class);
 
     private final AbrirOrdemServicoUseCase abrirOrdemServicoUseCase;
     private final FinalizarDiagnosticoUseCase finalizarDiagnosticoUseCase;
@@ -44,7 +49,9 @@ public class OrdemServicoController {
     })
     @PostMapping
     public ResponseEntity<?> criar(@RequestBody @Valid CriarOrdemDeServicoRequest request) {
+        logger.info("Recebida requisição para criar nova ordem de serviço.");
         var id = abrirOrdemServicoUseCase.executar(mapper.toInput(request));
+        logger.info("Ordem de serviço ID {} criada com sucesso via controller.", id);
         return ResponseEntity.created(URI.create("/ordens-servicos/" + id)).body(new IdResponse(id));
     }
 

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ordem-servico-app-config
+data:
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-svc.oficina-ns.svc.cluster.local:5432/ordem_servico_db"
+  SPRING_DATASOURCE_USERNAME: "userOrdemServicoDb"

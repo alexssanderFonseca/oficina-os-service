@@ -12,6 +12,8 @@ import br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.dto.ItemCatalog
 import br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.input.CriarOrdemServicoInput;
 import jakarta.inject.Named;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -20,6 +22,8 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class AbrirOrdemServicoUseCaseImpl implements AbrirOrdemServicoUseCase {
 
+    private static final Logger logger = LoggerFactory.getLogger(AbrirOrdemServicoUseCaseImpl.class);
+
     private final OrdemServicoCatalogoPort itemCatologoPort;
     private final OrdemServicoRepository ordemServicoRepository;
     private final OrdemServicoClientePort ordemServicoClientePort;
@@ -27,8 +31,15 @@ public class AbrirOrdemServicoUseCaseImpl implements AbrirOrdemServicoUseCase {
 
     @Override
     public UUID executar(CriarOrdemServicoInput input) {
+        logger.info("Iniciando a abertura de ordem de serviço para clienteId: {} e veiculoId: {}", input.clienteId(), input.veiculoId());
+
+        logger.info("Buscando cliente com ID: {}", input.clienteId());
         var cliente = ordemServicoClientePort.buscarCliente(input.clienteId())
-                .orElseThrow(OrdemServicoClienteNaoEncontradoException::new);
+                .orElseGet(() -> {
+                    logger.warn("Cliente com ID {} não encontrado.", input.clienteId());
+                    throw new OrdemServicoClienteNaoEncontradoException();
+                });
+        logger.info("Cliente com ID {} encontrado.", cliente.getId());
 
         var veiculo = cliente.getVeiculos().stream()
                 .filter(v -> v.getId().equals(input.veiculoId()))
@@ -38,6 +49,7 @@ public class AbrirOrdemServicoUseCaseImpl implements AbrirOrdemServicoUseCase {
         var ordemServico = abrirOrdemServico(cliente, veiculo, input);
         ordemServicoRepository.salvar(ordemServico);
         ordemServicoMetricPort.incrementaNumeroOrdensCriadas();
+        logger.info("Ordem de serviço ID {} criada com sucesso para o cliente ID {} e veículo ID {}.", ordemServico.getId(), cliente.getId(), veiculo.getId());
         return ordemServico.getId();
     }
 
