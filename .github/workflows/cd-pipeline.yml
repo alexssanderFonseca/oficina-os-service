@@ -1,0 +1,38 @@
+name: CD Pipeline - Deploy Ordem Servico
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'ordem_servico/**' # Only run when changes are in the ordem_servico directory
+
+jobs:
+  publish-image:
+    name: Publicar Imagem Ordem Servico no Docker Hub
+    uses: ./.github/workflows/reusable-publish-docker.yml
+    secrets: inherit
+    with:
+      context: ordem_servico/
+      dockerfile: ordem_servico/Dockerfile
+      image-name: alexsdm/ordem-servico # Replace with your Docker Hub username and desired image name
+    id: publish-step # Add an ID to the job to access its outputs
+
+  deploy-application:
+    name: Deploy da Aplicação Ordem Servico no Kubernetes
+    needs: [publish-image]
+    uses: ./.github/workflows/reusable-deploy-k8s.yml
+    with:
+      image-tag: ${{ needs.publish-image.outputs.image-tag }}
+      environment: producao # Or any other environment you target
+      app-name: ordem-servico-app # Name used in Kustomize for image replacement
+      k8s-overlay-path: ordem_servico/k8s/overlays/${{ inputs.environment }} # Path to the kustomize overlay for ordem_servico
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }} # Assuming this is generic or specific to ordem_servico
+      RDS_URL: ${{ secrets.RDS_URL }}

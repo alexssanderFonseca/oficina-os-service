@@ -31,7 +31,10 @@ spec:
             - containerPort: 9091
           env:
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://ordem-servico-postgres-svc:5432/ordem_servico_db"
+              valueFrom:
+                secretKeyRef:
+                  name: ordem-servico-secret
+                  key: RDS_URL
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 configMapKeyRef:
@@ -42,11 +45,6 @@ spec:
                 secretKeyRef:
                   name: ordem-servico-postgres-secret
                   key: SPRING_DATASOURCE_PASSWORD
-            - name: JWT_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: ordem-servico-secret
-                  key: JWT_KEY
             - name: SERVER_PORT
               value: "9091"
             - name: ENV_NAME

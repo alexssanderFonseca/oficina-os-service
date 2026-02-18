@@ -6,7 +6,6 @@ resources:
   - ordem-servico-secret.yaml
   - app-deployment.yaml
   - app-service.yaml
-  - service-loadbalancer.yaml
   - app-hpa.yaml
 
 namePrefix: ordem-servico-
