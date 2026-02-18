@@ -194,6 +194,7 @@ Este módulo segue a arquitetura hexagonal, organizada da seguinte forma:
 Essa estrutura garante que o núcleo da aplicação permaneça isolado e testável, independentemente das tecnologias utilizadas na camada de infraestrutura.
 ---
 
+
 ## 📜 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](../../LICENSE) para mais detalhes.
