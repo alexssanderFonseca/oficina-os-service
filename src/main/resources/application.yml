@@ -34,6 +34,15 @@ feign:
         url: ${FEIGN_CLIENT_CATALOGO_URL}
       orcamento-service:
         url: ${FEIGN_CLIENT_ORCAMENTO_URL}
+      pagamento-service:
+        url: ${FEIGN_CLIENT_PAGAMENTO_URL}
+
+aws:
+  region: ${AWS_REGION:us-east-1}
+  sqs:
+    payment-queue-url: ${AWS_SQS_PAYMENT_QUEUE_URL}
+    endpoint-override: ${AWS_SQS_ENDPOINT_OVERRIDE:}
+    polling-interval-ms: ${AWS_SQS_POLLING_INTERVAL:5000}
 
 otel:
   service:

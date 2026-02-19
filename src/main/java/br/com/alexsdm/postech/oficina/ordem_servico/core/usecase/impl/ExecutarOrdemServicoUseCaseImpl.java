@@ -7,6 +7,7 @@ import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.exception.OrdemS
 import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.exception.OrdemServicoNaoEncontradaException;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.port.in.ExecutarOrdemServicoUseCase;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.port.out.OrdemServicoCatalogoPort;
+import br.com.alexsdm.postech.oficina.ordem_servico.core.port.out.OrdemServicoPagamentoPort;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.port.out.OrdemServicoRepository;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.dto.ItemParaBaixaEstoque;
 import jakarta.inject.Named;
@@ -14,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.UUID;
 
 @Named
@@ -25,6 +25,7 @@ public class ExecutarOrdemServicoUseCaseImpl implements ExecutarOrdemServicoUseC
 
     private final OrdemServicoRepository ordemServicoRepository;
     private final OrdemServicoCatalogoPort ordemServicoCatalogoPort;
+    private final OrdemServicoPagamentoPort ordemServicoPagamentoPort;
 
     @Override
     public void executar(UUID osId, UUID orcamentoId) {
@@ -43,9 +44,14 @@ public class ExecutarOrdemServicoUseCaseImpl implements ExecutarOrdemServicoUseC
             }
 
             baixarItensEstoque(ordemServico);
-            ordemServico.executar();
+            ordemServico.executar(); // Coloca a OS em EM_EXECUCAO
+
+            // Solicita o pagamento e atualiza o status de pagamento da OS
+            ordemServico.iniciarPagamento();
             ordemServicoRepository.salvar(ordemServico);
-            logger.info("Ordem de Serviço ID {} executada e salva com sucesso.", osId);
+            ordemServicoPagamentoPort.solicitarPagamento(ordemServico);
+
+            logger.info("Ordem de Serviço ID {} executada, pagamento solicitado e salva com sucesso.", osId);
         } catch (Exception e) {
             logger.error("Erro na execução da Ordem de Serviço ID {}: {}", osId, e.getMessage(), e);
             throw e;

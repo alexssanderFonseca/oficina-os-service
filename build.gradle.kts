@@ -39,6 +39,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation ("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+    implementation("software.amazon.awssdk:sqs:2.41.31") // AWS SDK v2 for SQS
 
     implementation("org.slf4j:slf4j-api:2.0.7")
     implementation("jakarta.inject:jakarta.inject-api:2.0.1")
@@ -72,6 +73,7 @@ dependencies {
 dependencyManagement {
 	imports {
 		mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
+		mavenBom("software.amazon.awssdk:bom:2.41.31") // AWS SDK v2 BOM
 	}
 }
 
@@ -87,6 +89,10 @@ tasks.withType<Test> {
 
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-parameters")
+}
+
+tasks.bootRun {
+    systemProperty("spring.profiles.active", "local")
 }
 
 

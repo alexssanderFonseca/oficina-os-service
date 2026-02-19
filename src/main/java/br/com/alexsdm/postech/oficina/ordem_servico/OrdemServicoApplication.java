@@ -9,10 +9,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 @SpringBootApplication
 @EnableFeignClients
 @EnableJpaAuditing
 @EnableAspectJAutoProxy
+@EnableScheduling
 public class OrdemServicoApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(OrdemServicoApplication.class);

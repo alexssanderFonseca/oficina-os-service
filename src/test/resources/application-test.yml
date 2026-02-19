@@ -57,6 +57,15 @@ feign:
         url: http://localhost:8085
       orcamento-service:
         url: http://localhost:8089
+      pagamento-service:
+        url: http://localhost:8086
+
+aws:
+  region: sa-east-1
+  sqs:
+    payment-queue-url: http://localhost:4566/000000000000/payment-events-queue
+    endpoint-override: http://localhost:4566
+    polling-interval-ms: 3000
 
   logs:
     exporter: none
@@ -70,3 +79,10 @@ feign:
       enabled: true
     micrometer:
       enabled: true
+
+logging:
+  level:
+    root: INFO
+    br.com.alexsdm: DEBUG
+    org.springframework: INFO
+    org.hibernate: INFO

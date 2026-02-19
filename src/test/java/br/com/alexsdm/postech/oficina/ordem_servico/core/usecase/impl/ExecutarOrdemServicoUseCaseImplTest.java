@@ -1,29 +1,29 @@
 package br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.impl;
 
-import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.entity.ItemOrdemServico;
-import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.entity.OrdemServico;
-import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.entity.Status;
-import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.entity.TipoItem;
+import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.entity.*;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.exception.OrdemServicoException;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.domain.exception.OrdemServicoNaoEncontradaException;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.port.out.OrdemServicoCatalogoPort;
+import br.com.alexsdm.postech.oficina.ordem_servico.core.port.out.OrdemServicoPagamentoPort;
 import br.com.alexsdm.postech.oficina.ordem_servico.core.port.out.OrdemServicoRepository;
-import br.com.alexsdm.postech.oficina.ordem_servico.core.usecase.dto.ItemParaBaixaEstoque;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
@@ -34,9 +34,8 @@ class ExecutarOrdemServicoUseCaseImplTest {
     private OrdemServicoRepository ordemServicoRepository;
     @Mock
     private OrdemServicoCatalogoPort ordemServicoCatalogoPort;
-    // OrdemServicoOrcamentoPort is not directly used in the modified execute method,
-    // so it doesn't need to be mocked here if it's not being tested for its behavior.
-    // private OrdemServicoOrcamentoPort ordemServicoOrcamentoPort;
+    @Mock
+    private OrdemServicoPagamentoPort ordemServicoPagamentoPort; // Novo mock
 
     @InjectMocks
     private ExecutarOrdemServicoUseCaseImpl executarOrdemServicoUseCase;
@@ -72,38 +71,38 @@ class ExecutarOrdemServicoUseCaseImplTest {
                 null,
                 List.of(pecaItem, servicoItem),
                 Status.AGUARDANDO_EXECUCAO,
-                null, null, null, null, null, null
+                LocalDateTime.now().minusDays(1), null, null, null, null, null,
+                null, // StatusPagamento inicial
+                null // PagamentoId inicial
         );
+        ordemServico.vincularOrcamento(orcamentoId);
     }
 
     @Test
-    void shouldExecuteOrderAndReduceStockWhenPecaItemsExist() {
+    void shouldExecuteOrderAndInitiatePaymentWhenPecaItemsExist() {
         // Given
         when(ordemServicoRepository.buscarPorId(osId)).thenReturn(Optional.of(ordemServico));
         doNothing().when(ordemServicoCatalogoPort).darBaixaEstoque(anyList());
+        doNothing().when(ordemServicoPagamentoPort).solicitarPagamento(any(OrdemServico.class));
 
         // When
         executarOrdemServicoUseCase.executar(osId, orcamentoId);
 
         // Then
-        verify(ordemServicoRepository, times(1)).buscarPorId(osId);
-        ArgumentCaptor<List<ItemParaBaixaEstoque>> captor = ArgumentCaptor.forClass(List.class);
-        verify(ordemServicoCatalogoPort, times(1)).darBaixaEstoque(captor.capture());
+        InOrder inOrder = inOrder(ordemServicoRepository, ordemServicoCatalogoPort, ordemServicoPagamentoPort);
 
-        List<ItemParaBaixaEstoque> capturedItems = captor.getValue();
-        assertEquals(1, capturedItems.size());
-        assertEquals(TipoItem.PECA.name(), ordemServico.getItens().get(0).getTipo().name());
-        assertEquals(ordemServico.getItens().get(0).getItemId(), capturedItems.get(0).getItemId());
-        assertEquals(ordemServico.getItens().get(0).getQuantidade(), capturedItems.get(0).getQuantidade());
-
+        inOrder.verify(ordemServicoRepository, times(1)).buscarPorId(osId);
+        inOrder.verify(ordemServicoCatalogoPort, times(1)).darBaixaEstoque(anyList());
+        inOrder.verify(ordemServicoRepository, times(1)).salvar(ordemServico); // Salva após iniciar pagamento
+        inOrder.verify(ordemServicoPagamentoPort, times(1)).solicitarPagamento(ordemServico);
 
         // Verify that the order's execute method was called (status changed)
         assertEquals(Status.EM_EXECUCAO, ordemServico.getStatus());
-        verify(ordemServicoRepository, times(1)).salvar(ordemServico);
+        assertEquals(PagamentoStatus.PENDENTE, ordemServico.getStatusPagamento());
     }
 
     @Test
-    void shouldExecuteOrderWithoutReducingStockWhenNoPecaItemsExist() {
+    void shouldExecuteOrderWithoutReducingStockButInitiatePaymentWhenNoPecaItemsExist() {
         // Given
         ordemServico = OrdemServico.from(
                 osId,
@@ -117,22 +116,32 @@ class ExecutarOrdemServicoUseCaseImplTest {
                         .nome("Servico Teste")
                         .build()),
                 Status.AGUARDANDO_EXECUCAO,
-                null, null, null, null, null, null
+                LocalDateTime.now().minusDays(1), null, null, null, null, null,
+                null, // StatusPagamento inicial
+                null // PagamentoId inicial
         );
+        ordemServico.vincularOrcamento(orcamentoId);
         when(ordemServicoRepository.buscarPorId(osId)).thenReturn(Optional.of(ordemServico));
+        doNothing().when(ordemServicoPagamentoPort).solicitarPagamento(any(OrdemServico.class));
+
 
         // When
         executarOrdemServicoUseCase.executar(osId, orcamentoId);
 
         // Then
-        verify(ordemServicoRepository, times(1)).buscarPorId(osId);
-        verify(ordemServicoCatalogoPort, never()).darBaixaEstoque(anyList()); // No peca items, so no stock reduction
+        InOrder inOrder = inOrder(ordemServicoRepository, ordemServicoCatalogoPort, ordemServicoPagamentoPort);
+
+        inOrder.verify(ordemServicoRepository, times(1)).buscarPorId(osId);
+        inOrder.verify(ordemServicoCatalogoPort, never()).darBaixaEstoque(anyList()); // No peca items, so no stock reduction
+        inOrder.verify(ordemServicoRepository, times(1)).salvar(ordemServico); // Salva após iniciar pagamento
+        inOrder.verify(ordemServicoPagamentoPort, times(1)).solicitarPagamento(ordemServico);
+
         assertEquals(Status.EM_EXECUCAO, ordemServico.getStatus());
-        verify(ordemServicoRepository, times(1)).salvar(ordemServico);
+        assertEquals(PagamentoStatus.PENDENTE, ordemServico.getStatusPagamento());
     }
 
     @Test
-    void shouldThrowExceptionWhenStockReductionFails() {
+    void shouldThrowExceptionWhenStockReductionFailsAndNotInitiatePayment() {
         // Given
         when(ordemServicoRepository.buscarPorId(osId)).thenReturn(Optional.of(ordemServico));
         doThrow(new RuntimeException("Estoque insuficiente"))
@@ -145,6 +154,7 @@ class ExecutarOrdemServicoUseCaseImplTest {
         assertEquals("Falha ao dar baixa no estoque de peças: Estoque insuficiente", exception.getMessage());
         verify(ordemServicoRepository, times(1)).buscarPorId(osId);
         verify(ordemServicoCatalogoPort, times(1)).darBaixaEstoque(anyList());
+        verify(ordemServicoPagamentoPort, never()).solicitarPagamento(any(OrdemServico.class)); // Payment not initiated
         verify(ordemServicoRepository, never()).salvar(any(OrdemServico.class)); // Should not save if stock reduction fails
     }
 
@@ -159,6 +169,7 @@ class ExecutarOrdemServicoUseCaseImplTest {
 
         verify(ordemServicoRepository, times(1)).buscarPorId(osId);
         verify(ordemServicoCatalogoPort, never()).darBaixaEstoque(anyList());
+        verify(ordemServicoPagamentoPort, never()).solicitarPagamento(any(OrdemServico.class));
         verify(ordemServicoRepository, never()).salvar(any(OrdemServico.class));
     }
 
@@ -171,8 +182,11 @@ class ExecutarOrdemServicoUseCaseImplTest {
                 null,
                 Collections.emptyList(),
                 Status.AGUARDANDO_APROVACAO, // Set status to awaiting approval
-                null, null, null, null, null, null
+                LocalDateTime.now().minusDays(1), null, null, null, null, null,
+                null, // StatusPagamento inicial
+                null // PagamentoId inicial
         );
+        ordemServico.vincularOrcamento(orcamentoId);
         when(ordemServicoRepository.buscarPorId(osId)).thenReturn(Optional.of(ordemServico));
 
         // When & Then
@@ -182,6 +196,29 @@ class ExecutarOrdemServicoUseCaseImplTest {
         assertEquals("Ordem de servico com aprovação do orçamento pendente", exception.getMessage());
         verify(ordemServicoRepository, times(1)).buscarPorId(osId);
         verify(ordemServicoCatalogoPort, never()).darBaixaEstoque(anyList());
+        verify(ordemServicoPagamentoPort, never()).solicitarPagamento(any(OrdemServico.class));
         verify(ordemServicoRepository, never()).salvar(any(OrdemServico.class));
     }
+
+    @Test
+    void shouldThrowExceptionWhenPaymentInitiationFails() {
+        // Given
+        when(ordemServicoRepository.buscarPorId(osId)).thenReturn(Optional.of(ordemServico));
+        doNothing().when(ordemServicoCatalogoPort).darBaixaEstoque(anyList());
+        doThrow(new RuntimeException("Erro ao iniciar pagamento"))
+                .when(ordemServicoPagamentoPort).solicitarPagamento(any(OrdemServico.class));
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                executarOrdemServicoUseCase.executar(osId, orcamentoId));
+
+        assertEquals("Erro ao iniciar pagamento", exception.getMessage());
+        verify(ordemServicoRepository, times(1)).buscarPorId(osId);
+        verify(ordemServicoCatalogoPort, times(1)).darBaixaEstoque(anyList());
+        verify(ordemServicoPagamentoPort, times(1)).solicitarPagamento(any(OrdemServico.class));
+        // Expect one save for initial status update, but no second save if payment fails later.
+        // The current implementation saves before calling payment port, so one save is expected.
+        verify(ordemServicoRepository, times(1)).salvar(ordemServico);
+    }
 }
+

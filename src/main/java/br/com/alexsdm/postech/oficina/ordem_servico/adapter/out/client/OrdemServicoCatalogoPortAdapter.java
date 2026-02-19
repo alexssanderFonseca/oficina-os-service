@@ -29,6 +29,7 @@ public class OrdemServicoCatalogoPortAdapter implements OrdemServicoCatalogoPort
         try {
             if (TIPO_PECA.equalsIgnoreCase(tipoItem)) {
                 var response = catalogoFeignClient.buscarPecaPorId(id);
+                if (response == null) throw new RuntimeException("Peça não encontrada no catálogo");
                 logger.info("Peça com ID {} encontrada no catálogo.", id);
                 return new ItemCatalogoDto(
                         response.id(),
@@ -42,6 +43,7 @@ public class OrdemServicoCatalogoPortAdapter implements OrdemServicoCatalogoPort
 
             if (TIPO_SERVICO.equalsIgnoreCase(tipoItem)) {
                 var response = catalogoFeignClient.buscarServicoPorId(id);
+                if (response == null) throw new RuntimeException("Serviço não encontrado no catálogo");
                 logger.info("Serviço com ID {} encontrado no catálogo.", id);
                 return new ItemCatalogoDto(
                         response.id(),
@@ -75,6 +77,24 @@ public class OrdemServicoCatalogoPortAdapter implements OrdemServicoCatalogoPort
         } catch (Exception e) {
             logger.error("Erro ao solicitar baixa de estoque: {}", e.getMessage(), e);
             throw new RuntimeException("Erro ao solicitar baixa de estoque.", e);
+        }
+    }
+
+    @Override
+    public void reporEstoque(List<ItemParaBaixaEstoque> itens) {
+        logger.info("Solicitando reposição de estoque para {} itens.", itens.size());
+        try {
+            var requests = itens.stream()
+                    .map(item -> BaixaEstoqueRequest.builder()
+                            .itemId(item.getItemId())
+                            .quantidade(item.getQuantidade())
+                            .build())
+                    .toList();
+            catalogoFeignClient.reporEstoque(requests);
+            logger.info("Reposição de estoque solicitada com sucesso para {} itens.", itens.size());
+        } catch (Exception e) {
+            logger.error("Erro ao solicitar reposição de estoque: {}", e.getMessage(), e);
+            throw new RuntimeException("Erro ao solicitar reposição de estoque.", e);
         }
     }
 }

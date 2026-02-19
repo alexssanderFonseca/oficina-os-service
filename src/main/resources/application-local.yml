@@ -57,6 +57,15 @@ feign:
         url: http://localhost:8085
       orcamento-service:
         url: http://localhost:8089
+      pagamento-service:
+        url: http://localhost:8086 # URL para o serviço de pagamentos em ambiente local
+
+aws:
+  region: sa-east-1 # Região AWS padrão para local
+  sqs:
+    payment-queue-url: http://localhost:4566/000000000000/payment-events-queue # URL da fila SQS de eventos de pagamento
+    endpoint-override: http://localhost:4566 # Endpoint para LocalStack ou similar
+    polling-interval-ms: 3000 # Intervalo de polling reduzido para ambiente local (3 segundos)
 
   logs:
     exporter: none

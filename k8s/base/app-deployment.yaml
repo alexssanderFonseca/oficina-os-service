@@ -43,7 +43,7 @@ spec:
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: ordem-servico-postgres-secret
+                  name: ordem-servico-secret
                   key: SPRING_DATASOURCE_PASSWORD
             - name: SERVER_PORT
               value: "9091"
@@ -74,10 +74,10 @@ spec:
           resources:
             requests:
               memory: "512Mi"
-              cpu: "500m"
+              cpu: "250m"
             limits:
               memory: "700Mi"
-              cpu: "800m"
+              cpu: "250m"
 
           livenessProbe:
             httpGet:

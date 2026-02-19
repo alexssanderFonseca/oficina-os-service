@@ -23,4 +23,7 @@ public interface CatalogoFeignClient {
 
     @PutMapping("/pecas/dar-baixa-estoque")
     void darBaixaEstoque(@RequestBody List<BaixaEstoqueRequest> requests);
+
+    @PutMapping("/pecas/repor-estoque")
+    void reporEstoque(@RequestBody List<BaixaEstoqueRequest> requests);
 }

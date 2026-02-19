@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface OrdemServicoCatalogoPort {
     ItemCatalogoDto buscarItemCatalogo(UUID id, String tipoItem);
     void darBaixaEstoque(List<ItemParaBaixaEstoque> itens);
+    void reporEstoque(List<ItemParaBaixaEstoque> itens);
 }

@@ -30,7 +30,7 @@ public class OrdemServicoEntity {
     @Column(name = "orcamento_id")
     private UUID orcamentoId;
 
-    @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ItemOrdemServicoEntity> itens;
 
     @Enumerated(EnumType.STRING)
@@ -42,4 +42,11 @@ public class OrdemServicoEntity {
     private LocalDateTime dataFinalizacao;
     private LocalDateTime dataInicioDiagnostico;
     private LocalDateTime dataFimDiagnostico;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_pagamento")
+    private PagamentoStatusEntity statusPagamento;
+
+    @Column(name = "pagamento_id")
+    private UUID pagamentoId;
 }

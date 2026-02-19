@@ -24,6 +24,8 @@ public class OrdemServico {
     private LocalDateTime dataFinalizacao;
     private BigDecimal valorTotal;
     private UUID orcamentoId;
+    private PagamentoStatus statusPagamento;
+    private UUID pagamentoId;
 
     private OrdemServico(UUID id,
                          Cliente cliente,
@@ -35,7 +37,9 @@ public class OrdemServico {
                          LocalDateTime dataFimDiagnostico,
                          LocalDateTime dataInicioDaExecucao,
                          LocalDateTime dataEntrega,
-                         LocalDateTime dataFinalizacao) {
+                         LocalDateTime dataFinalizacao,
+                         PagamentoStatus statusPagamento,
+                         UUID pagamentoId) {
         this.id = id;
         this.cliente = cliente;
         this.veiculo = veiculo;
@@ -44,12 +48,14 @@ public class OrdemServico {
         }
         this.status = status;
         this.dataCriacao = dataCriacao;
-        this.dataInicioDaExecucao = dataInicioDaExecucao;
         this.dataInicioDiagnostico = dataInicioDiagnostico;
         this.dataFimDiagnostico = dataFimDiagnostico;
+        this.dataInicioDaExecucao = dataInicioDaExecucao;
         this.dataEntrega = dataEntrega;
         this.dataFinalizacao = dataFinalizacao;
         this.valorTotal = calcularValorTotal();
+        this.statusPagamento = statusPagamento;
+        this.pagamentoId = pagamentoId;
     }
 
 
@@ -63,6 +69,8 @@ public class OrdemServico {
                 Status.EM_DIAGNOSTICO,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -85,6 +93,8 @@ public class OrdemServico {
                 null,
                 LocalDateTime.now(),
                 null,
+                null,
+                null,
                 null
         );
     }
@@ -95,11 +105,13 @@ public class OrdemServico {
                                     List<ItemOrdemServico> itens,
                                     Status status,
                                     LocalDateTime dataCriacao,
-                                    LocalDateTime dataInicioDaExecucao,
                                     LocalDateTime dataInicioDiagnostico,
                                     LocalDateTime dataFimDiagnostico,
+                                    LocalDateTime dataInicioDaExecucao,
                                     LocalDateTime dataEntrega,
-                                    LocalDateTime dataFinalizacao) {
+                                    LocalDateTime dataFinalizacao,
+                                    PagamentoStatus statusPagamento,
+                                    UUID pagamentoId) {
         return new OrdemServico(
                 id,
                 cliente,
@@ -111,7 +123,9 @@ public class OrdemServico {
                 dataFimDiagnostico,
                 dataInicioDaExecucao,
                 dataEntrega,
-                dataFinalizacao);
+                dataFinalizacao,
+                statusPagamento,
+                pagamentoId);
 
     }
 
@@ -132,6 +146,21 @@ public class OrdemServico {
         this.executar();
     }
 
+    public void iniciarPagamento() {
+        this.statusPagamento = PagamentoStatus.PENDENTE;
+    }
+
+    public void confirmarPagamento(UUID pagamentoId) {
+        this.statusPagamento = PagamentoStatus.APROVADO;
+        this.pagamentoId = pagamentoId;
+    }
+
+    public void rejeitarPagamento() {
+        this.statusPagamento = PagamentoStatus.RECUSADO;
+        // Opcional: Atualizar status da OS para refletir a falha, se o fluxo exigir paralisacao
+         this.status = Status.AGUARDANDO_PAGAMENTO; 
+    }
+
     public void iniciarDiagnostico() {
         this.status = Status.EM_DIAGNOSTICO;
         this.dataInicioDiagnostico = LocalDateTime.now();
@@ -146,6 +175,9 @@ public class OrdemServico {
     }
 
     public void finalizar() {
+        if (this.statusPagamento != PagamentoStatus.APROVADO) {
+            throw new IllegalStateException("A ordem de serviço só pode ser finalizada se o pagamento estiver aprovado.");
+        }
         this.status = Status.FINALIZADA;
         this.dataFinalizacao = LocalDateTime.now();
     }

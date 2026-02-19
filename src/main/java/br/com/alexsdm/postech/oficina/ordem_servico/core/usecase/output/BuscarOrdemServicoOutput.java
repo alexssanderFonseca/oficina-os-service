@@ -11,6 +11,7 @@ public record BuscarOrdemServicoOutput(
         LocalDateTime dataFinalizacao,
         LocalDateTime dataEntrega,
         String status,
+        String statusPagamento,
         BuscarOrdemServicoDadosClientOutput dadosCliente,
         BuscarOrdemServicoDadosVeiculoOutput dadosVeiculo,
         List<BuscarOrdemServicoItemOutput> itens

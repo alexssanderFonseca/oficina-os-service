@@ -5,8 +5,6 @@ import br.com.alexsdm.postech.oficina.ordem_servico.adapter.out.persistence.enti
 
 public class StatusMapper {
 
-    private StatusMapper statusMapper;
-
     public static Status toDomain(StatusEntity entity) {
         if (entity == null) {
             return null;

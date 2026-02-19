@@ -22,11 +22,13 @@ public class OrdemServicoMapper {
                         .collect(Collectors.toList()),
                 StatusMapper.toDomain(entity.getStatus()),
                 entity.getDataCriacao(),
-                entity.getDataInicioDaExecucao(),
                 entity.getDataInicioDiagnostico(),
                 entity.getDataFimDiagnostico(),
+                entity.getDataInicioDaExecucao(),
                 entity.getDataEntrega(),
-                entity.getDataFinalizacao()
+                entity.getDataFinalizacao(),
+                PagamentoStatusMapper.toDomain(entity.getStatusPagamento()), // Novo campo
+                entity.getPagamentoId()                                     // Novo campo
         );
     }
 
@@ -49,6 +51,8 @@ public class OrdemServicoMapper {
         entity.setDataInicioDaExecucao(domain.getDataInicioDaExecucao());
         entity.setDataEntrega(domain.getDataEntrega());
         entity.setDataFinalizacao(domain.getDataFinalizacao());
+        entity.setStatusPagamento(PagamentoStatusMapper.toEntity(domain.getStatusPagamento())); // Novo campo
+        entity.setPagamentoId(domain.getPagamentoId());                                     // Novo campo
         entity.setItens(
                 domain.getItens().stream()
                         .map(ItemOrdemServicoMapper::toEntity)

@@ -1,6 +1,5 @@
 package br.com.alexsdm.postech.oficina.ordem_servico.adapter.in.controller;
 
-import br.com.alexsdm.postech.oficina.ordem_servico.adapter.in.controller.IdResponse;
 import br.com.alexsdm.postech.oficina.ordem_servico.adapter.in.controller.mapper.OrdemServicoControllerMapper;
 import br.com.alexsdm.postech.oficina.ordem_servico.adapter.in.controller.request.CriarOrdemDeServicoRequest;
 import br.com.alexsdm.postech.oficina.ordem_servico.adapter.in.controller.request.ExecutarOrdemServicoRequest;
@@ -125,7 +124,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscar(@PathVariable UUID id) {
+    public ResponseEntity<?> buscar(@PathVariable(name = "id") UUID id) {
         var os = buscarOrdemServicoPorIdUseCase.executar(id);
         return ResponseEntity.ok(os);
     }
