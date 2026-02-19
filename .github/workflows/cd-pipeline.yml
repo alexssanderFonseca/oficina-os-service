@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - 'main'
-    paths:
-      - 'ordem_servico/**' # Only run when changes are in the ordem_servico directory
+
+permissions:
+  packages: write
+  contents: write
 
 jobs:
   publish-image:
@@ -13,8 +15,8 @@ jobs:
     uses: ./.github/workflows/reusable-publish-docker.yml
     secrets: inherit
     with:
-      context: ordem_servico/
-      dockerfile: ordem_servico/Dockerfile
+      context: .
+      dockerfile: Dockerfile
       image-name: alexsdm/ordem-servico # Replace with your Docker Hub username and desired image name
 
   deploy-application:
@@ -25,7 +27,7 @@ jobs:
       image-tag: ${{ needs.publish-image.outputs.image-tag }}
       environment: producao # Or any other environment you target
       app-name: ordem-servico-app # Name used in Kustomize for image replacement
-      k8s-overlay-path: ordem_servico/k8s/overlays/${{ inputs.environment }} # Path to the kustomize overlay for ordem_servico
+      k8s-overlay-path: k8s/overlays/producao # Path to the kustomize overlay for ordem_servico
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
