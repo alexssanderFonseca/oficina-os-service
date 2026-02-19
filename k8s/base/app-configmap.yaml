@@ -8,6 +8,6 @@ data:
   FEIGN_CLIENT_CLIENTE_URL: "http://cliente-cliente-app-service"
   FEIGN_CLIENT_CATALOGO_URL: "http://catalogo-catalogo-app-service"
   FEIGN_CLIENT_ORCAMENTO_URL: "http://orcamento-orcamento-app-service"
-  FEIGN_CLIENT_PAGAMENTO_URL: "http://pagamento-app-service"
+  FEIGN_CLIENT_PAGAMENTO_URL: "http://pagamento-service"
   AWS_REGION: "us-east-1"
   AWS_SQS_PAYMENT_QUEUE_URL: "https://sqs.us-east-1.amazonaws.com/602900801621/sqs-recebe-notifacao-pagamento"
