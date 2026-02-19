@@ -44,11 +44,12 @@ public class FinalizarDiagnosticoUseCaseImpl implements FinalizarDiagnosticoUseC
 
             var itens = obterItens(input);
             ordemServico.finalizarDiagnostico(itens);
-            ordemServicoRepository.salvar(ordemServico);
+            var ordemServicoSalva = ordemServicoRepository.salvar(ordemServico);
+            
             logger.info("Diagnóstico finalizado e Ordem de Serviço ID {} atualizada. Enviando orçamento.", ordemServico.getId());
-            UUID orcamentoIdRetornado = enviarOrcamento(ordemServico);
-            ordemServico.vincularOrcamento(orcamentoIdRetornado);
-            ordemServicoRepository.salvar(ordemServico);
+            UUID orcamentoIdRetornado = enviarOrcamento(ordemServicoSalva);
+            ordemServicoSalva.vincularOrcamento(orcamentoIdRetornado);
+            ordemServicoRepository.salvar(ordemServicoSalva);
             logger.info("Finalização de diagnóstico para Ordem de Serviço ID {} concluída. Orçamento ID: {}", ordemServico.getId(), orcamentoIdRetornado);
             return new FinalizarDiagnosticoOutput(orcamentoIdRetornado);
         } catch (Exception e) {
