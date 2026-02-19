@@ -17,6 +17,9 @@ spec:
       labels:
         app: ordem-servico-app
         admission.datadoghq.com/enabled: "true"
+        tags.datadoghq.com/service: "ordem-servico"
+        tags.datadoghq.com/env: "local"
+        tags.datadoghq.com/version: "1.0.0"
     spec:
       containers:
         - name: ordem-servico-app
@@ -26,10 +29,23 @@ spec:
           args:
             - |
               export OTEL_EXPORTER_OTLP_ENDPOINT="http://${DD_AGENT_HOST}:4318"
+              export OTEL_SERVICE_NAME="ordem-servico"
               exec java -jar app.jar
           ports:
             - containerPort: 9091
           env:
+            - name: DD_SERVICE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/service']
+            - name: DD_ENV
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/env']
+            - name: DD_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/version']
             - name: SPRING_DATASOURCE_URL
               valueFrom:
                 secretKeyRef:
