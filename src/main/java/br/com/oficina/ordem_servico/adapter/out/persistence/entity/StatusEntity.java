@@ -1,0 +1,12 @@
+package br.com.oficina.ordem_servico.adapter.out.persistence.entity;
+
+public enum StatusEntity {
+    EM_DIAGNOSTICO,
+    AGUARDANDO_APROVACAO,
+    AGUARDANDO_EXECUCAO,
+    AGUARDANDO_PAGAMENTO,
+    EM_EXECUCAO,
+    FINALIZADA,
+    ENTREGUE,
+    FALHA
+}
