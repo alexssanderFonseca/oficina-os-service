@@ -1,14 +1,6 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: app-config
+  name: ordem-servico-app-config
 data:
-  SPRING_DATASOURCE_URL: "jdbc:postgresql://academico-rds.cmvwumiyi5g1.us-east-1.rds.amazonaws.com:5432/ordem_servico_db"
-  ENV_NAME: "producao"
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: postgres-config
-data:
-  POSTGRES_DB: "ordem_servico_db"
+  ENV_NAME: "prod"
