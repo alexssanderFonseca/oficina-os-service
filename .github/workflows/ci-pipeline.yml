@@ -4,16 +4,12 @@ on:
   push:
     branches:
       - 'feature/**'
-    paths:
-      - 'ordem_servico/**' # Only run when changes are in the ordem_servico directory
 
 jobs:
   build-and-test:
     name: Build e Testes - Ordem Servico
     uses: ./.github/workflows/reusable-build.yml
     secrets: inherit
-    with:
-      working-directory: ordem_servico/
 
   validate-docker:
     name: Validação Docker - Ordem Servico
@@ -21,8 +17,8 @@ jobs:
     uses: ./.github/workflows/reusable-docker.yml
     secrets: inherit
     with:
-      context: ordem_servico/
-      dockerfile: ordem_servico/Dockerfile
+      context: .
+      dockerfile: Dockerfile
 
   create-pull-request:
     name: Criar Pull Request - Ordem Servico
