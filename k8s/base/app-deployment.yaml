@@ -72,6 +72,26 @@ spec:
                 configMapKeyRef:
                   name: ordem-servico-app-config
                   key: FEIGN_CLIENT_PAGAMENTO_URL
+            - name: AWS_SQS_PAYMENT_QUEUE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ordem-servico-app-config
+                  key: AWS_SQS_PAYMENT_QUEUE_URL
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ordem-servico-secret
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ordem-servico-secret
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_SESSION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ordem-servico-secret
+                  key: AWS_SESSION_TOKEN
             - name: DD_AGENT_HOST
               valueFrom:
                 fieldRef:
@@ -88,16 +108,16 @@ spec:
             httpGet:
               path: /actuator/health
               port: 9091
-            initialDelaySeconds: 45
+            initialDelaySeconds: 300
             periodSeconds: 10
             timeoutSeconds: 5
-            failureThreshold: 3
+            failureThreshold: 5
 
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 9091
-            initialDelaySeconds: 45
-            periodSeconds: 5
+            initialDelaySeconds: 120
+            periodSeconds: 10
             timeoutSeconds: 3
-            failureThreshold: 3
+            failureThreshold: 5
