@@ -30,6 +30,7 @@ public class ListarOrdemServicoUsecaseImpl implements ListarOrdemServicoUsecase 
                             ordemServico.getCliente().getId(),
                             ordemServico.getVeiculo().getId(),
                             ordemServico.getStatus().name(),
+                            ordemServico.getStatusPagamento() != null ? ordemServico.getStatusPagamento().name() : null,
                             ordemServico.getDataCriacao()
                     ))
                     .toList();

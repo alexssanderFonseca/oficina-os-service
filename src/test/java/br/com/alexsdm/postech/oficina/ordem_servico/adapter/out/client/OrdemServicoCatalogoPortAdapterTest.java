@@ -62,7 +62,25 @@ class OrdemServicoCatalogoPortAdapterTest {
     }
 
     @Test
-    void shouldPropagateExceptionWhenFeignClientFails() {
+    void shouldCallFeignClientToReporStockSuccessfully() {
+        // Given
+        doNothing().when(catalogoFeignClient).reporEstoque(anyList());
+
+        // When
+        adapter.reporEstoque(itemsParaBaixa);
+
+        // Then
+        ArgumentCaptor<List<BaixaEstoqueRequest>> captor = ArgumentCaptor.forClass(List.class);
+        verify(catalogoFeignClient, times(1)).reporEstoque(captor.capture());
+
+        List<BaixaEstoqueRequest> capturedRequests = captor.getValue();
+        assertEquals(1, capturedRequests.size());
+        assertEquals(itemId, capturedRequests.get(0).getItemId());
+        assertEquals(5, capturedRequests.get(0).getQuantidade());
+    }
+
+    @Test
+    void shouldPropagateExceptionWhenFeignClientFailsToReduceStock() {
         // Given
         RuntimeException feignException = new RuntimeException("Feign client error");
         doThrow(feignException).when(catalogoFeignClient).darBaixaEstoque(anyList());
@@ -73,5 +91,19 @@ class OrdemServicoCatalogoPortAdapterTest {
 
         assertEquals("Erro ao solicitar baixa de estoque.", thrown.getMessage());
         verify(catalogoFeignClient, times(1)).darBaixaEstoque(anyList());
+    }
+
+    @Test
+    void shouldPropagateExceptionWhenFeignClientFailsToReporStock() {
+        // Given
+        RuntimeException feignException = new RuntimeException("Feign client error");
+        doThrow(feignException).when(catalogoFeignClient).reporEstoque(anyList());
+
+        // When & Then
+        RuntimeException thrown = assertThrows(RuntimeException.class, () ->
+                adapter.reporEstoque(itemsParaBaixa));
+
+        assertEquals("Erro ao solicitar reposição de estoque.", thrown.getMessage());
+        verify(catalogoFeignClient, times(1)).reporEstoque(anyList());
     }
 }

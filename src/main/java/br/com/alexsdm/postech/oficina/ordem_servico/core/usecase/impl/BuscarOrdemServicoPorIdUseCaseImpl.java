@@ -68,6 +68,7 @@ public class BuscarOrdemServicoPorIdUseCaseImpl implements BuscarOrdemServicoPor
                     ordemServico.getDataFinalizacao(),
                     ordemServico.getDataEntrega(),
                     ordemServico.getStatus().toString(),
+                    ordemServico.getStatusPagamento() != null ? ordemServico.getStatusPagamento().toString() : null,
                     dadosCliente,
                     dadosVeiculo,
                     itens

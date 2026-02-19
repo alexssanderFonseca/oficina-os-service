@@ -24,6 +24,10 @@ public class OrdemServicoClienteAdapter implements OrdemServicoClientePort {
         logger.info("Tentando buscar cliente com ID: {}", id);
         try {
             var clienteResponse = clienteFeignClient.buscarPorId(id);
+            if (clienteResponse == null) {
+                logger.warn("Cliente com ID {} não encontrado no serviço externo.", id);
+                return Optional.empty();
+            }
             var cliente = new Cliente(
                     clienteResponse.id(),
                     clienteResponse.nome() + " " + clienteResponse.sobrenome(),

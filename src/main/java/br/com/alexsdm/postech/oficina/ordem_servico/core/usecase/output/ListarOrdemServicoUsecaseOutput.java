@@ -7,5 +7,6 @@ public record ListarOrdemServicoUsecaseOutput(UUID osId,
                                               UUID clienteId,
                                               UUID veiculoId,
                                               String status,
+                                              String statusPagamento,
                                               LocalDateTime dataAbertura) {
 }

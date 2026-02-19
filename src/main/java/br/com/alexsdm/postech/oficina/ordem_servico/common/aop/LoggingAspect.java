@@ -13,8 +13,11 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 
+import org.springframework.context.annotation.Profile;
+
 @Aspect
 @Component
+@Profile("!test")
 public class LoggingAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
@@ -27,16 +30,22 @@ public class LoggingAspect {
         String methodName = signature.getMethod().getName();
         Object[] args = joinPoint.getArgs();
 
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-
-        logger.info("Requisição Controller: {}.{}() | URI: {} {} | Args: {}",
-                className, methodName, request.getMethod(), request.getRequestURI(), Arrays.toString(args));
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            HttpServletRequest request = attributes.getRequest();
+            logger.info("Requisição Controller: {}.{}() | URI: {} {} | Args: {}",
+                    className, methodName, request.getMethod(), request.getRequestURI(), 
+                    args != null ? Arrays.toString(args) : "null");
+        } else {
+            logger.info("Requisição Controller: {}.{}() | Args: {}", 
+                    className, methodName, args != null ? Arrays.toString(args) : "null");
+        }
 
         Object result = joinPoint.proceed();
         long elapsedTime = System.currentTimeMillis() - startTime;
 
         logger.info("Resposta Controller: {}.{}() | Tempo de Execução: {}ms | Resultado: {}",
-                className, methodName, elapsedTime, result);
+                className, methodName, elapsedTime, result != null ? result : "void/null");
 
         return result;
     }
@@ -49,13 +58,14 @@ public class LoggingAspect {
         String methodName = signature.getMethod().getName();
         Object[] args = joinPoint.getArgs();
 
-        logger.info("Execução Service: {}.{}() | Args: {}", className, methodName, Arrays.toString(args));
+        logger.info("Execução Service: {}.{}() | Args: {}", 
+                className, methodName, args != null ? Arrays.toString(args) : "null");
 
         Object result = joinPoint.proceed();
         long elapsedTime = System.currentTimeMillis() - startTime;
 
         logger.info("Resultado Service: {}.{}() | Tempo de Execução: {}ms | Resultado: {}",
-                className, methodName, elapsedTime, result);
+                className, methodName, elapsedTime, result != null ? result : "void/null");
 
         return result;
     }
@@ -64,11 +74,12 @@ public class LoggingAspect {
     public Object logPersistence(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String className = signature.getDeclaringType().getSimpleName();
+        String className = signature.getDeclaringType() != null ? signature.getDeclaringType().getSimpleName() : "UnknownRepository";
         String methodName = signature.getMethod().getName();
         Object[] args = joinPoint.getArgs();
 
-        logger.info("Acesso à Persistência: {}.{}() | Args: {}", className, methodName, Arrays.toString(args));
+        logger.info("Acesso à Persistência: {}.{}() | Args: {}", 
+                className, methodName, args != null ? Arrays.toString(args) : "null");
 
         Object result = joinPoint.proceed();
         long elapsedTime = System.currentTimeMillis() - startTime;
