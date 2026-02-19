@@ -198,3 +198,4 @@ Essa estrutura garante que o núcleo da aplicação permaneça isolado e testáv
 ## 📜 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](../../LICENSE) para mais detalhes.
+
