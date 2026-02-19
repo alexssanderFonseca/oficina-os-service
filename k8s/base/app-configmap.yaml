@@ -3,6 +3,7 @@ kind: ConfigMap
 metadata:
   name: ordem-servico-app-config
 data:
+  SPRING_DATASOURCE_USERNAME: "userOrdemservicoDb"
   ENV_NAME: "local"
   FEIGN_CLIENT_CLIENTE_URL: "http://cliente-app-service"
   FEIGN_CLIENT_CATALOGO_URL: "http://catalogo-app-service"
