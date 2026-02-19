@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "pagamento-service", url = "${feign.client.config.pagamento-service.url}")
 public interface PagamentoFeignClient {
 
-    @PostMapping("/pagamentos")
+    @PostMapping("/v1/pagamentos")
     void solicitarPagamento(@RequestBody PagamentoRequest request);
 }

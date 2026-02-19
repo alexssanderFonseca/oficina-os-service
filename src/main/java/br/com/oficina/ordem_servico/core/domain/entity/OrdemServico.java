@@ -172,6 +172,7 @@ public class OrdemServico {
         this.itens.clear();
         this.itens.addAll(itens);
         this.dataFimDiagnostico = LocalDateTime.now();
+        this.valorTotal = calcularValorTotal();
     }
 
     public void finalizar() {

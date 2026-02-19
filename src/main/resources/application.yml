@@ -46,7 +46,7 @@ aws:
 
 otel:
   service:
-    name: oficina
+    name: ${OTEL_SERVICE_NAME:ordem-servico}
     resource:
       attributes:
         environment: ${OTEL_ENVIRONMENT}
