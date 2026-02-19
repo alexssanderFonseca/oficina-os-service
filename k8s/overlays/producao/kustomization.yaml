@@ -7,9 +7,12 @@ resources:
   - ../../base
   - namespace.yaml
 
-commonLabels:
-  tags.datadoghq.com/env: "prod"
-  tags.datadoghq.com/version: "1.0.0"
+labels:
+  - pairs:
+      tags.datadoghq.com/env: "prod"
+      tags.datadoghq.com/version: "1.0.0"
+    includeSelectors: false
+    includeTemplates: true
 
 patches:
   - path: configmap-patch.yaml
