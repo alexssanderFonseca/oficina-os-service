@@ -1,0 +1,236 @@
+type: collection.insomnia.rest/5.0
+name: Oficina Ordem de Serviço Service
+meta:
+  id: wrk_7c1f1899d6e14726b58477308b1d51f3
+  created: 1771330112485
+  modified: 1771330112485
+collection:
+  - name: Ordens de Serviço
+    meta:
+      id: fld_780194b6c5554fa4949bfacc79fb10f8
+      created: 1676523000000
+      modified: 1676523000000
+      sortKey: -1771330112489
+    children:
+      - url: "{{ _.base_url }}/ordens-servicos"
+        name: Criar Ordem de Serviço
+        meta:
+          id: req_0376aee287034a0d98cc78de444c1222
+          created: 1676523000000
+          modified: 1771536379132
+          isPrivate: false
+          description: Abre uma nova ordem de serviço
+          sortKey: -1771330112491
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"veiculoId": "{{veiculo_id}}",
+            	"clienteId": "{{cliente_id}}"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/ordens-servicos/{{ _.os_id }}/entregas"
+        name: Entregar Veículo
+        meta:
+          id: req_138bc2e2fb764f8da4d8112d0986df50
+          created: 1676523000000
+          modified: 1676523000000
+          isPrivate: false
+          description: Registra a entrega do veículo ao cliente
+          sortKey: -1771330112502
+        method: POST
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/ordens-servicos"
+        name: Listar Ordens de Serviço
+        meta:
+          id: req_21888889e2dd428a8a9cf85bed5bf94a
+          created: 1676523000000
+          modified: 1676523000000
+          isPrivate: false
+          description: Lista todas as ordens de serviço de forma paginada
+          sortKey: -1771330112490
+        method: GET
+        parameters:
+          - name: pagina
+            value: "0"
+            disabled: false
+            description: Page number
+          - name: quantidade
+            value: "10"
+            disabled: false
+            description: Page size
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/ordens-servicos/{{ _.os_id }}/finalizacoes"
+        name: Finalizar Ordem de Serviço
+        meta:
+          id: req_494b52588aba4d338d5124d4809beb52
+          created: 1676523000000
+          modified: 1676523000000
+          isPrivate: false
+          description: Finaliza a execução de uma ordem de serviço
+          sortKey: -1771330112500
+        method: POST
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/ordens-servicos/{{ _.os_id }}/execucoes"
+        name: Executar Ordem de Serviço
+        meta:
+          id: req_6bef797864e4489fa7660ced464dab65
+          created: 1676523000000
+          modified: 1771547832045
+          isPrivate: false
+          description: Inicia a execução de uma ordem de serviço após aprovação do orçamento
+          sortKey: -1771330112497
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "orcamentoId": "{{ _.orcamento_id }}"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/ordens-servicos/{{ _.os_id }}/aprovacoes"
+        name: Aprovar Ordem de Serviço
+        meta:
+          id: req_a69e36b7b4a04cc5857c822da54b700c
+          created: 1676523000000
+          modified: 1676523000000
+          isPrivate: false
+          description: Aprova uma ordem de serviço
+          sortKey: -1771330112496
+        method: POST
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/ordens-servicos/{{ _.os_id }}"
+        name: Buscar Ordem de Serviço por ID
+        meta:
+          id: req_f2a5b49bcbee4c75b19cb8c600dfa5a4
+          created: 1676523000000
+          modified: 1771548481599
+          isPrivate: false
+          description: Busca uma ordem de serviço por ID
+          sortKey: -1771330112493
+        method: GET
+        body:
+          mimeType: application/json
+          text: >-
+            {
+            	"Message": "{\"externalReference\": \"5e2695d4-89f6-4837-85a3-ee7ea0e88504\", \"status\": \"RECUSADO\", \"pagamentoId\":      \"2e2695d4-89f6-4837-85a3-ee7ea0e88504\"}"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/ordens-servicos/{{ _.os_id }}/diagnosticos/finalizacoes"
+        name: Finalizar Diagnóstico
+        meta:
+          id: req_fae65a2a7aac4ea4b81611cb3a33f97d
+          created: 1676523000000
+          modified: 1771547376048
+          isPrivate: false
+          description: Finaliza o diagnóstico de uma OS, informando itens necessários
+          sortKey: -1771330112495
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"itens": [
+            		{
+            			"id": "f9083d63-b8ca-4549-98bb-2736cd26138d",
+            			"quantidade": 10,
+            			"tipo": "PECA"
+            		},
+            		{
+            			"id": "b4c97b3d-b3c8-44f0-a8df-6b7ac055d2da",
+            			"quantidade": 1,
+            			"tipo": "SERVICO"
+            		}
+            	]
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_ca77feb733946660832ab1cd73343c811507af31
+    created: 1771330112504
+    modified: 1771330112504
+environments:
+  name: Base Environment
+  meta:
+    id: env_8a35364292f746cabbf07d1ee2326f1e
+    created: 1676523000000
+    modified: 1771536399275
+    isPrivate: false
+  data:
+    base_url: https://ibxnp2iz65.execute-api.us-east-1.amazonaws.com/dev
+    os_id: "{% response 'body', 'req_0376aee287034a0d98cc78de444c1222',
+      'b64::JC5pZA==::46b', 'never', 60 %}"
+    orcamento_id: "{% response 'body', 'req_fae65a2a7aac4ea4b81611cb3a33f97d',
+      'b64::JC5pZA==::46b', 'never', 60 %}"
+    veiculo_id: 5a75c216-da0c-462d-9cf5-059c7aec0073
+    cliente_id: e151bfd2-e15b-489b-ad39-a03ce9ac6a23
